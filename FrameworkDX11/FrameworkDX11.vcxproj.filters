@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <FxCompile Include="shader.fx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ImGui\imgui.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_draw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_impl_dx11.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_impl_win32.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_widgets.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Framework\Camera\Camera.cpp" />
+    <ClCompile Include="Framework\DDS Texture Loader\DDSTextureLoader.cpp" />
+    <ClCompile Include="Framework\Terrain\Terrain.cpp" />
+    <ClCompile Include="Framework\Game Objects\Drawable Game Object\DrawableGameObject.cpp" />
+    <ClCompile Include="Framework\Scene Graph\SceneNode.cpp" />
+    <ClCompile Include="Bone.cpp" />
+    <ClCompile Include="Framework\Skeleton\Skeleton.cpp" />
+    <ClCompile Include="Framework\OBJLoader\OBJLoader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="main.h" />
+    <CLInclude Include="resource.h" />
+    <ClInclude Include="structures.h" />
+    <ClInclude Include="ImGui\imconfig.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_impl_dx11.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_impl_win32.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_internal.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_rectpack.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_textedit.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_truetype.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Framework\Camera\Camera.h" />
+    <ClInclude Include="Framework\DDS Texture Loader\DDSTextureLoader.h" />
+    <ClInclude Include="Framework\Terrain\Terrain.h" />
+    <ClInclude Include="Framework\Game Objects\Drawable Game Object\DrawableGameObject.h" />
+    <ClInclude Include="Framework\Scene Graph\SceneNode.h" />
+    <ClInclude Include="Bone.h" />
+    <ClInclude Include="Framework\Skeleton\Skeleton.h" />
+    <ClInclude Include="Framework\OBJLoader\OBJLoader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Tutorial01.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\stone.dds" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="ImGui">
+      <UniqueIdentifier>{323a8959-f53d-4d49-b7a9-ab51b277b7e8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Terrain Textures\terrain.json" />
+  </ItemGroup>
+</Project>
