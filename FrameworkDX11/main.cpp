@@ -21,75 +21,75 @@ DirectX::XMFLOAT4 g_EyePosition(0.0f, 0, 1, 1.0f);
 //--------------------------------------------------------------------------------------
 // Forward declarations
 //--------------------------------------------------------------------------------------
-HRESULT		InitWindow(HINSTANCE hInstance, int nCmdShow);
-HRESULT		InitDevice();
-HRESULT		InitMesh();
-HRESULT		InitWorld(int width, int height);
-void		CleanupDevice();
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-void Update();
-void		Render();
+//HRESULT		InitWindow(HINSTANCE hInstance, int nCmdShow);
+//HRESULT		InitDevice();
+//HRESULT		InitMesh();
+//HRESULT		InitWorld(int width, int height);
+//void		CleanupDevice();
+//void Update();
+//void		Render();
 
 
 
 //--------------------------------------------------------------------------------------
 // Global Variables
 //--------------------------------------------------------------------------------------
-HINSTANCE               g_hInst = nullptr;
-HWND                    g_hWnd = nullptr;
-D3D_DRIVER_TYPE         g_driverType = D3D_DRIVER_TYPE_NULL;
-D3D_FEATURE_LEVEL       g_featureLevel = D3D_FEATURE_LEVEL_11_0;
-ID3D11Device*           g_pd3dDevice = nullptr;
-ID3D11Device1*          g_pd3dDevice1 = nullptr;
-ID3D11DeviceContext*    g_pImmediateContext = nullptr;
-ID3D11DeviceContext1*   g_pImmediateContext1 = nullptr;
-IDXGISwapChain*         g_pSwapChain = nullptr;
-IDXGISwapChain1*        g_pSwapChain1 = nullptr;
-ID3D11RenderTargetView* g_pRenderTargetView = nullptr;
-ID3D11Texture2D*        g_pDepthStencil = nullptr;
-ID3D11DepthStencilView* g_pDepthStencilView = nullptr;
-ID3D11VertexShader*     g_pVertexShader = nullptr;
-ID3D11VertexShader*     g_pVertexShaderTes = nullptr;
-
-ID3D11ShaderResourceView* _pTextureRV = nullptr;
-
-ID3D11RasterizerState* wireFrame = nullptr;
-ID3D11RasterizerState* solidFill = nullptr;
-ID3D11RasterizerState* rsState = nullptr;
-
-ID3D11PixelShader*      g_pPixelShader = nullptr;
-
-ID3D11HullShader* g_pHullShader = nullptr;
-ID3D11DomainShader* g_pDomainShader = nullptr;
-
-ID3D11InputLayout*      g_pVertexLayout = nullptr;
-ID3D11InputLayout*      g_pVertexLayoutTes = nullptr;
-
-ID3D11Buffer*           g_pConstantBuffer = nullptr;
-
-ID3D11Buffer*           g_pLightConstantBuffer = nullptr;
-
-XMMATRIX                g_View;
-XMMATRIX                g_Projection;
-
-int						g_viewWidth;
-int						g_viewHeight;
-
-string currentView = "Camera";
-
-bool tessellationToggled = true;
-
-Camera* camera = nullptr;
-POINT currentMouseMov;
-POINT lastMouseMov;
-float moveAmountX;
-float moveAmountY;
-
-DrawableGameObject*		g_GameObject;
-
-Terrain* grid = nullptr;
-
-Skeleton* skeleton;
+//HINSTANCE               g_hInst = nullptr;
+//HWND                    g_hWnd = nullptr;
+//D3D_DRIVER_TYPE         g_driverType = D3D_DRIVER_TYPE_NULL;
+//D3D_FEATURE_LEVEL       g_featureLevel = D3D_FEATURE_LEVEL_11_0;
+//ID3D11Device*           g_pd3dDevice = nullptr;
+//ID3D11Device1*          g_pd3dDevice1 = nullptr;
+//ID3D11DeviceContext*    g_pImmediateContext = nullptr;
+//ID3D11DeviceContext1*   g_pImmediateContext1 = nullptr;
+//IDXGISwapChain*         g_pSwapChain = nullptr;
+//IDXGISwapChain1*        g_pSwapChain1 = nullptr;
+//ID3D11RenderTargetView* g_pRenderTargetView = nullptr;
+//ID3D11Texture2D*        g_pDepthStencil = nullptr;
+//ID3D11DepthStencilView* g_pDepthStencilView = nullptr;
+//ID3D11VertexShader*     g_pVertexShader = nullptr;
+//ID3D11VertexShader*     g_pVertexShaderTes = nullptr;
+//
+//ID3D11ShaderResourceView* _pTextureRV = nullptr;
+//
+//ID3D11RasterizerState* wireFrame = nullptr;
+//ID3D11RasterizerState* solidFill = nullptr;
+//ID3D11RasterizerState* rsState = nullptr;
+//
+//ID3D11PixelShader*      g_pPixelShader = nullptr;
+//
+//ID3D11HullShader* g_pHullShader = nullptr;
+//ID3D11DomainShader* g_pDomainShader = nullptr;
+//
+//ID3D11InputLayout*      g_pVertexLayout = nullptr;
+//ID3D11InputLayout*      g_pVertexLayoutTes = nullptr;
+//
+//ID3D11Buffer*           g_pConstantBuffer = nullptr;
+//
+//ID3D11Buffer*           g_pLightConstantBuffer = nullptr;
+//
+//XMMATRIX                g_View;
+//XMMATRIX                g_Projection;
+//
+//int						g_viewWidth;
+//int						g_viewHeight;
+//
+//string currentView = "Camera";
+//
+//bool tessellationToggled = true;
+//
+//Camera* camera = nullptr;
+//POINT currentMouseMov;
+//POINT lastMouseMov;
+//float moveAmountX;
+//float moveAmountY;
+//
+//DrawableGameObject*		g_GameObject;
+//
+//Terrain* grid = nullptr;
+//
+//Skeleton* skeleton;
 
 
 //--------------------------------------------------------------------------------------
@@ -100,13 +100,14 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 {
     UNREFERENCED_PARAMETER( hPrevInstance );
     UNREFERENCED_PARAMETER( lpCmdLine );
+    Application* application = new Application();
 
-    if( FAILED( InitWindow( hInstance, nCmdShow ) ) )
+    if( FAILED( application->InitWindow( hInstance, nCmdShow ) ) )
         return 0;
 
-    if( FAILED( InitDevice() ) )
+    if( FAILED( application->InitDevice() ) )
     {
-        CleanupDevice();
+        application->CleanupDevice();
         return 0;
     }
 
@@ -114,18 +115,17 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     MSG msg = {0};
     while( WM_QUIT != msg.message )
     {
-        UpdateWindow(g_hWnd);
         
         if( PeekMessage( &msg, nullptr, 0, 0, PM_REMOVE ) )
         {
             TranslateMessage( &msg );
             DispatchMessage( &msg );
         }
-            Update();
-            Render();
+            application->Update();
+            application->Render();
     }
 
-    CleanupDevice();
+    application->CleanupDevice();
 
     return ( int )msg.wParam;
 }
@@ -134,7 +134,7 @@ int WINAPI wWinMain( _In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 //--------------------------------------------------------------------------------------
 // Register class and create window
 //--------------------------------------------------------------------------------------
-HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow )
+HRESULT Application::InitWindow( HINSTANCE hInstance, int nCmdShow )
 {
     // Register class
     WNDCLASSEX wcex;
@@ -216,7 +216,7 @@ HRESULT CompileShaderFromFile( const WCHAR* szFileName, LPCSTR szEntryPoint, LPC
 //--------------------------------------------------------------------------------------
 // Create Direct3D device and swap chain
 //--------------------------------------------------------------------------------------
-HRESULT InitDevice()
+HRESULT Application::InitDevice()
 {
     HRESULT hr = S_OK;
 
@@ -439,7 +439,7 @@ HRESULT InitDevice()
 // InitMesh
 // ***************************************************************************************
 
-HRESULT		InitMesh()
+HRESULT		Application::InitMesh()
 {
 	// Compile the vertex shader
 	ID3DBlob* pVSBlob = nullptr;
@@ -586,7 +586,7 @@ HRESULT		InitMesh()
 // ***************************************************************************************
 // InitWorld
 // ***************************************************************************************
-HRESULT		InitWorld(int width, int height)
+HRESULT		Application::InitWorld(int width, int height)
 {
 	// Initialize the view matrix
 	/*XMVECTOR Eye = XMVectorSet(0.0f, 0.5f, 0.5f, 0.0f);
@@ -605,7 +605,7 @@ HRESULT		InitWorld(int width, int height)
 	g_Projection = XMLoadFloat4x4(&camera->camera._projection);
 
     g_GameObject = new DrawableGameObject(g_pd3dDevice, g_pImmediateContext);
-    grid = new Terrain(10.0f, 10.0f, 512, 512, 0.75, g_pd3dDevice, g_pImmediateContext);
+    grid = new Terrain(100.0f, 100.0f, 512, 512, 0.75, g_pd3dDevice, g_pImmediateContext);
     
     //skeleton = new Skeleton(g_pd3dDevice, g_pImmediateContext);
 
@@ -618,7 +618,7 @@ HRESULT		InitWorld(int width, int height)
 //--------------------------------------------------------------------------------------
 // Clean up the objects we've created
 //--------------------------------------------------------------------------------------
-void CleanupDevice()
+void Application::CleanupDevice()
 {
     g_GameObject->cleanup();
 
@@ -699,7 +699,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
     return 0;
 }
 
-void setupLightForRender()
+void Application::SetupLightForRender()
 {
     Light light;
     light.Enabled = static_cast<int>(true);
@@ -752,64 +752,10 @@ float calculateDeltaTime()
 
 static float dTime = 0.0f;
 
-void Update()
+void Application::Update()
 {
     
 
-    if (GetAsyncKeyState(0x20) & 1)
-    {
-        if (currentView == "Object")
-            currentView = "Camera";
-        else if (currentView == "Camera")
-            currentView = "Object";
-    }
-
-    if (GetAsyncKeyState(0x78) & 1)
-    {
-        if (rsState == solidFill)
-            rsState = wireFrame;
-        else if (rsState == wireFrame)
-            rsState = solidFill;
-    }
-
-    if (currentView == "Camera")
-    {
-        if (GetAsyncKeyState(0x57)) //W
-        {
-            camera->Move(250.0f * 0.016, Forward);
-            //_View = XMLoadFloat4x4(&camera->GetView());
-        }
-        else if (GetAsyncKeyState(0x53))//S
-        {
-            camera->Move(250.0f * 0.016, Backward);
-            //_View = XMLoadFloat4x4(&camera->GetView());
-        }
-        if (GetAsyncKeyState(0x41))//D
-        {
-            camera->Move(250.0f * 0.016, Right);
-        }
-        else if (GetAsyncKeyState(0x44))//A
-        {
-            camera->Move(250.0f * 0.016, Left);
-        }
-
-        g_View = XMLoadFloat4x4(&camera->camera._view);
-    }
-
-    //float t = calculateDeltaTime(); // capped at 60 fps
-    //if (t == 0.0f)
-    //    return;
-
-   /*t = (dwTimeCur - dwTimeStart) / 1000.0f;
-    dTime = (t - prevTime);
-    prevTime = t;*/
-}
-
-//--------------------------------------------------------------------------------------
-// Render a frame
-//--------------------------------------------------------------------------------------
-void Render()
-{
     float t = calculateDeltaTime(); // capped at 60 fps
     if (t == 0.0f)
         return;
@@ -840,7 +786,7 @@ void Render()
     if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
     {
         grid->ResetSeed();
-        
+
     }
 
     GetCursorPos(&currentMouseMov);
@@ -851,40 +797,48 @@ void Render()
     {
         if (GetAsyncKeyState(0x57)) //W
         {
-            camera->Move(10.0f * t, Forward);
+            camera->Move(5000.0f * t, Forward);
             //_View = XMLoadFloat4x4(&camera->GetView());
         }
         else if (GetAsyncKeyState(0x53))//S
         {
-            camera->Move(10.0f * t, Backward);
+            camera->Move(5000.0f * t, Backward);
             //_View = XMLoadFloat4x4(&camera->GetView());
         }
         if (GetAsyncKeyState(0x41))//D
         {
-            camera->Move(10.0f * t, Right);
+            camera->Move(5000.0f * t, Right);
         }
         else if (GetAsyncKeyState(0x44))//A
         {
-            camera->Move(10.0f * t, Left);
+            camera->Move(5000.0f * t, Left);
         }
 
         /*if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
         {*/
-            if (currentMouseMov.x != lastMouseMov.x || currentMouseMov.y != lastMouseMov.y)
-            {
-                moveAmountX += lastMouseMov.y;
-                moveAmountY += currentMouseMov.x;
-                camera->Rotate((moveAmountX * 0.01), (moveAmountY * 0.01));
-                moveAmountX = 0.0f;
-                moveAmountY = 0.0f;
-                lastMouseMov = currentMouseMov;
-                //SetCursorPos(320, 240);
-                
-            }
+        if (currentMouseMov.x != lastMouseMov.x || currentMouseMov.y != lastMouseMov.y)
+        {
+            moveAmountX += lastMouseMov.y;
+            moveAmountY += currentMouseMov.x;
+            camera->Rotate((moveAmountX * 0.01), (moveAmountY * 0.01));
+            moveAmountX = 0.0f;
+            moveAmountY = 0.0f;
+            lastMouseMov = currentMouseMov;
+            //SetCursorPos(320, 240);
+
+        }
         //}
 
         g_View = XMLoadFloat4x4(&camera->camera._view);
     }
+}
+
+//--------------------------------------------------------------------------------------
+// Render a frame
+//--------------------------------------------------------------------------------------
+void Application::Render()
+{
+    
 
     // Clear the back buffer
     g_pImmediateContext->ClearRenderTargetView( g_pRenderTargetView, Colors::MidnightBlue );
@@ -909,7 +863,7 @@ void Render()
 	g_pImmediateContext->UpdateSubresource( g_pConstantBuffer, 0, nullptr, &cb1, 0, 0 );
 
     
-    setupLightForRender();
+    SetupLightForRender();
 
     // Render the cube
     if (tessellationToggled == false)

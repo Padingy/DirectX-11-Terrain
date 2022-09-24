@@ -1,0 +1,11 @@
+{
+    "PositionX": 1000,
+    "PositionY": 2000,
+    "PositionZ": 3000,
+    "Size": 512,
+    "TileScalingFactor": 10.0,
+    "HeightScalingFactor": 1000.0,
+    "SmoothingFactor": 0.75,
+    "Seed": 10,
+    "Algorithm": "DiamondSquare"
+}
