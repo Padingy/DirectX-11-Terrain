@@ -32,9 +32,8 @@ Terrain::Terrain(float width, float height, UINT rows, UINT cols, float smoothin
 	InitCorners();
 	DiamondSquare();
 
-	DSLoadHeightMap();
-	
-	DefineGrid(width, height, rows + 1, cols + 1, pd3dDevice, pContext);
+	DefineGrid(width, height, rows + 1, cols + 1);
+	InitMesh(pd3dDevice, pContext);
 
 }
 
@@ -46,7 +45,7 @@ void Terrain::Init()
 {
 }
 
-HRESULT Terrain::DefineGrid(float width, float depth, UINT rows, UINT cols, ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContext)
+void Terrain::DefineGrid(float width, float depth, UINT rows, UINT cols)
 {
 	int vertexCount = rows * cols;
 	UINT triCount = (rows - 1) * (cols - 1) * 2;
@@ -66,7 +65,6 @@ HRESULT Terrain::DefineGrid(float width, float depth, UINT rows, UINT cols, ID3D
 	grid.vertices.clear();
 	grid.indices.clear();
 
-
 	UINT k = 0;
 	Vertex v;
 	for (int i = 0; i < rows; i++)
@@ -81,9 +79,9 @@ HRESULT Terrain::DefineGrid(float width, float depth, UINT rows, UINT cols, ID3D
 			//v.TexCoord.x = j * du;
 			//v.TexCoord.y = i * dv;
 
-			v.Position.x = 0 + (j * 0.1);
+			v.Position.x = 0 + (j * width);
 			v.Position.y = (float)mHeightMap[k];
-			v.Position.z = 0 + (i * 0.1);
+			v.Position.z = 0 + (i * depth);
 			
 			v.TexCoord.x = j / cols;
 			v.TexCoord.y = i / rows;
@@ -112,6 +110,11 @@ HRESULT Terrain::DefineGrid(float width, float depth, UINT rows, UINT cols, ID3D
 		}
 	}
 
+	
+}
+
+HRESULT Terrain::InitMesh(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContext)
+{
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(Vertex) * grid.vertices.size();
@@ -142,7 +145,7 @@ HRESULT Terrain::DefineGrid(float width, float depth, UINT rows, UINT cols, ID3D
 	pContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	
+
 	hr = CreateDDSTextureFromFile(pd3dDevice, L"Resources\\Terrain Textures\\water.dds", nullptr, &m_pTextureResourceViewWater);
 	if (FAILED(hr))
 		return hr;
@@ -158,7 +161,7 @@ HRESULT Terrain::DefineGrid(float width, float depth, UINT rows, UINT cols, ID3D
 	hr = CreateDDSTextureFromFile(pd3dDevice, L"Resources\\Terrain Textures\\lightdirt.dds", nullptr, &m_pTextureResourceViewLightDirt);
 	if (FAILED(hr))
 		return hr;
-	
+
 	hr = CreateDDSTextureFromFile(pd3dDevice, L"Resources\\Terrain Textures\\lightdirt.dds", nullptr, &m_pTextureResourceViewDarkDirt);
 	if (FAILED(hr))
 		return hr;
@@ -325,7 +328,7 @@ void Terrain::DiamondSquare()
 		roughness /= 2;
 	}
 
-
+	DSLoadHeightMap();
 }
 
 void Terrain::FaultLine()

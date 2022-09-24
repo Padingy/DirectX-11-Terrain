@@ -43,7 +43,8 @@ public:
 	~Terrain();
 
 	void Init();
-	HRESULT DefineGrid(float width, float depth, UINT rows, UINT cols, ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContext);
+	void DefineGrid(float width, float depth, UINT rows, UINT cols);
+	HRESULT InitMesh(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContext);
 	void Draw(ID3D11DeviceContext* pContext);
 
 	void ToggleTessellation(bool toggled, ID3D11DeviceContext* pContext);
