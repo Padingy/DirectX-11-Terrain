@@ -7,6 +7,8 @@
 #include "..\..\Resource.h"
 #include <iostream>
 #include "..\..\structures.h"
+#include "..\Dependencies\NlohmannJson\json.hpp"
+#include "..\Game Objects\GameObject.h"
 #include <vector>
 #include <fstream>
 #include <DirectXMath.h>
@@ -16,8 +18,9 @@
 #include <cmath>
 
 using namespace DirectX;
+using json = nlohmann::json;
 
-class Terrain
+class Terrain : public GameObject
 {
 public:
 	struct Vertex
@@ -34,9 +37,14 @@ public:
 		vector<unsigned long> indices;
 	};
 
-	struct HeightMapData
+	struct TerrainTextureHeights
 	{
-
+		float textureHeight0;
+		float textureHeight1;
+		float textureHeight2;
+		float textureHeight3;
+		float textureHeight4;
+		float padding[3];
 	};
 
 	Terrain(float width, float height, UINT rows, UINT cols, float smoothingFactor, ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContext, int seed = time(0));
@@ -45,7 +53,8 @@ public:
 	void Init();
 	void DefineGrid(float width, float depth, UINT rows, UINT cols);
 	HRESULT InitMesh(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContext);
-	void Draw(ID3D11DeviceContext* pContext);
+	virtual void Update(float t) override;
+	virtual void Draw(ID3D11DeviceContext* pContext) override;
 
 	void ToggleTessellation(bool toggled, ID3D11DeviceContext* pContext);
 
@@ -53,8 +62,15 @@ public:
 
 	void TerrainSmoothing(float k, UINT rows, UINT cols);
 
+	void SetPosition(XMFLOAT4 newPosition) { m_position = newPosition; };
+	XMFLOAT4 GetPosition() { return m_position; };
+
+	void SetHeights();
+	void SetTextureHeights();
+
 	XMFLOAT4X4* GetTransform() { return &m_World; };
 	ID3D11Buffer* getMaterialConstantBuffer() { return m_pMaterialConstantBuffer; }
+	
 
 	int Rnd(int min = 0, int max = 255);
 	void InitCorners();
@@ -62,26 +78,20 @@ public:
 	void SquareStep(int sideLength);
 	void Average(int x, int y, int sideLength);
 	void DiamondSquare();
+	void DiamondSquare1(int tileScale);
+	vector<float> GetHeightMap() { return mHeightMap; };
 	void FaultLine();
-	void DSLoadHeightMap();
+	int ConvertTo1D(int x, int y);
+	void LoadFromJSON(char* _filePath);
 
 	void Clamp(int* val, int min, int max);
+	void Clamp(float* val, int min, int max);
 	void Clamp_map();
 
 	void ResetSeed();
 
-	TerrainData grid;
-
-	vector<float> mHeightMap;
-
-	int map[513][513];
-	
-	int heightmapHeight = 513;
-	int heightmapWidth = 513;
-	float heightScale = 1.0f;
 private:
 	XMFLOAT4X4 m_World;
-	XMMATRIX m_Matrix;
 
 	ID3D11Buffer* m_pVertexBuffer;
 	ID3D11Buffer* m_pIndexBuffer;
@@ -94,6 +104,7 @@ private:
 	ID3D11SamplerState* m_pSamplerLinear;
 	MaterialPropertiesConstantBuffer	m_material;
 	ID3D11Buffer* m_pMaterialConstantBuffer = nullptr;
+	ID3D11Buffer* m_pTerrainTextureHeights = nullptr;
 	XMFLOAT4 m_position;
 
 	UINT stride;
@@ -108,7 +119,17 @@ private:
 	float width;
 	UINT cols;
 	UINT rows;
-
 	int seed;
+
+	TerrainData grid;
+	TerrainTextureHeights terrainTextureHeights;
+
+	vector<float> mHeightMap;
+	int heightmapHeight = 513;
+	int heightmapWidth = 513;
+	float heightScale = 1.0f;
+
+	int terrainSize = 512;
+	int map[513][513];
 };
 

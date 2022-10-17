@@ -52,6 +52,8 @@ cbuffer MaterialProperties : register(b1)
 	_Material Material;
 };
 
+
+
 struct Light
 {
 	float4      Position;               // 16 bytes
@@ -79,6 +81,16 @@ cbuffer LightProperties : register(b2)
 										//----------------------------------- (16 byte boundary)
 	Light Lights[MAX_LIGHTS];           // 80 * 8 = 640 bytes
 }; 
+
+cbuffer TextureHeights : register(b3)
+{
+	float textureHeight0;
+	float textureHeight1;
+	float textureHeight2;
+	float textureHeight3;
+	float textureHeight4;
+	float padding[3];
+}
 
 //--------------------------------------------------------------------------------------
 struct HS_IO
@@ -252,7 +264,7 @@ float4 PS(PS_INPUT IN) : SV_TARGET
 
 	if (Material.UseTexture)
 	{
-		if (IN.worldPos.y * 255 <= 10)
+		/*if (IN.worldPos.y * 255 <= 10)
 			texColor = txDiffuse.Sample(samLinear, IN.Tex);
 		else if (IN.worldPos.y * 255 > 10 && IN.worldPos.y * 255 <= 25)
 			texColor = txDiffuse1.Sample(samLinear, IN.Tex);
@@ -261,6 +273,17 @@ float4 PS(PS_INPUT IN) : SV_TARGET
 		else if (IN.worldPos.y * 255 > 125 && IN.worldPos.y * 255 <= 175)
 			texColor = txDiffuse2.Sample(samLinear, IN.Tex);
 		else if (IN.worldPos.y * 255 > 175 && IN.worldPos.y * 255 <= 255)
+			texColor = txDiffuse5.Sample(samLinear, IN.Tex);*/
+
+		if (IN.worldPos.y <= textureHeight0)
+			texColor = txDiffuse.Sample(samLinear, IN.Tex);
+		else if (IN.worldPos.y  > textureHeight0 && IN.worldPos.y <= textureHeight1)
+			texColor = txDiffuse1.Sample(samLinear, IN.Tex);
+		else if (IN.worldPos.y > textureHeight1 && IN.worldPos.y <= textureHeight2)
+			texColor = txDiffuse2.Sample(samLinear, IN.Tex);
+		else if (IN.worldPos.y > textureHeight2 && IN.worldPos.y <= textureHeight3)
+			texColor = txDiffuse2.Sample(samLinear, IN.Tex);
+		else if (IN.worldPos.y > textureHeight3)
 			texColor = txDiffuse5.Sample(samLinear, IN.Tex);
 	}
 

@@ -354,8 +354,10 @@
     <ClInclude Include="Bone.h" />
     <ClInclude Include="Framework\Camera\Camera.h" />
     <ClInclude Include="Framework\DDS Texture Loader\DDSTextureLoader.h" />
+    <ClInclude Include="Framework\Dependencies\NlohmannJson\json.hpp" />
     <ClInclude Include="Framework\Game Objects\Drawable Game Object\DrawableGameObject.h" />
     <ClInclude Include="Framework\Terrain\Terrain.h" />
+    <ClInclude Include="Framework\Game Objects\GameObject.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />
     <ClInclude Include="ImGui\imgui_impl_dx11.h" />
@@ -378,6 +380,7 @@
     <ClCompile Include="Framework\DDS Texture Loader\DDSTextureLoader.cpp" />
     <ClCompile Include="Framework\Game Objects\Drawable Game Object\DrawableGameObject.cpp" />
     <ClCompile Include="Framework\Terrain\Terrain.cpp" />
+    <ClCompile Include="Framework\Game Objects\GameObject.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_draw.cpp" />
     <ClCompile Include="ImGui\imgui_impl_dx11.cpp" />

@@ -1,11 +1,16 @@
 {
-    "PositionX": 1000,
-    "PositionY": 2000,
-    "PositionZ": 3000,
+    "PositionX": 0,
+    "PositionY": 0,
+    "PositionZ": 0,
     "Size": 512,
     "TileScalingFactor": 10.0,
     "HeightScalingFactor": 1000.0,
     "SmoothingFactor": 0.75,
-    "Seed": 10,
+    "Seed": null,
+    "TerrainTextureHeight0": 500,
+    "TerrainTextureHeight1": 1000,
+    "TerrainTextureHeight2": 1500,
+    "TerrainTextureHeight3": 3000,
+    "TerrainTextureHeight4": 3500,
     "Algorithm": "DiamondSquare"
 }

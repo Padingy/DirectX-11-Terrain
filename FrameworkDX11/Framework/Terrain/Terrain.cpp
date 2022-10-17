@@ -5,9 +5,7 @@ Terrain::Terrain(float width, float height, UINT rows, UINT cols, float smoothin
 {
 	m_position = XMFLOAT4(00.0f, -0.2f, 0.0f, 0.0f);
 
-	XMStoreFloat4x4(&m_World, XMMatrixTranslation(m_position.x, m_position.y, m_position.z));
-	m_Matrix = XMLoadFloat4x4(&m_World);
-	XMStoreFloat4x4(&m_World, XMMatrixIdentity());
+	
 
 	/**********************************************
 	MARKING SCHEME: LOADING TERRAIN WITH HEIGHT MAP
@@ -27,12 +25,18 @@ Terrain::Terrain(float width, float height, UINT rows, UINT cols, float smoothin
 	***********************************************/
 
 	size = rows + 1;
-	srand(time(0));
+	terrainSize = rows + 1;
+	heightScale = 1000.0f;
+	SetTextureHeights();
 
-	InitCorners();
-	DiamondSquare();
+	LoadFromJSON((char*)"Framework/Terrain/JSON/DiamondSquare.json");
 
-	DefineGrid(width, height, rows + 1, cols + 1);
+	srand(10);
+
+	//DefineGrid(width, height, rows + 1, cols + 1);
+	//InitCorners();
+	//DiamondSquare1();
+
 	InitMesh(pd3dDevice, pContext);
 
 }
@@ -64,6 +68,10 @@ void Terrain::DefineGrid(float width, float depth, UINT rows, UINT cols)
 
 	grid.vertices.clear();
 	grid.indices.clear();
+	mHeightMap.clear();
+
+	for (int l = 0; l < (rows * cols); l++)
+		mHeightMap.push_back(0);
 
 	UINT k = 0;
 	Vertex v;
@@ -83,8 +91,11 @@ void Terrain::DefineGrid(float width, float depth, UINT rows, UINT cols)
 			v.Position.y = (float)mHeightMap[k];
 			v.Position.z = 0 + (i * depth);
 			
-			v.TexCoord.x = j / cols;
-			v.TexCoord.y = i / rows;
+			v.TexCoord.x = j * du;
+			v.TexCoord.y = i * dv;
+
+			/*v.TexCoord.x = j / cols;
+			v.TexCoord.y = i / rows;*/
 
 			k++;
 			grid.vertices.push_back(v);
@@ -110,11 +121,12 @@ void Terrain::DefineGrid(float width, float depth, UINT rows, UINT cols)
 		}
 	}
 
-	
 }
 
 HRESULT Terrain::InitMesh(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContext)
 {
+	SetHeights();
+
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(Vertex) * grid.vertices.size();
@@ -132,6 +144,7 @@ HRESULT Terrain::InitMesh(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContex
 	offset = 0;
 	pContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
 
+	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(unsigned long) * grid.indices.size();        // 36 vertices needed for 12 triangles in a triangle list
 	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
@@ -145,6 +158,8 @@ HRESULT Terrain::InitMesh(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContex
 	pContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	
 
 	hr = CreateDDSTextureFromFile(pd3dDevice, L"Resources\\Terrain Textures\\water.dds", nullptr, &m_pTextureResourceViewWater);
 	if (FAILED(hr))
@@ -195,6 +210,7 @@ HRESULT Terrain::InitMesh(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContex
 	m_material.Material.UseTexture = true;
 
 	// Create the material constant buffer
+	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(MaterialPropertiesConstantBuffer);
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -203,11 +219,30 @@ HRESULT Terrain::InitMesh(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContex
 	if (FAILED(hr))
 		return hr;
 
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(TerrainTextureHeights);
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = 0;
+	hr = pd3dDevice->CreateBuffer(&bd, nullptr, &m_pTerrainTextureHeights);
+	if (FAILED(hr))
+		return hr;
+
 	return hr;
+}
+
+void Terrain::Update(float t)
+{
+	GameObject::Update(t);
+	XMMATRIX mTranslate = XMMatrixTranslation(m_position.x, m_position.y, m_position.z);
+	XMMATRIX m_Matrix = mTranslate;
+	XMStoreFloat4x4(&m_World, m_Matrix);
 }
 
 void Terrain::Draw(ID3D11DeviceContext* pContext)
 {
+	pContext->UpdateSubresource(m_pTerrainTextureHeights, 0, nullptr, &terrainTextureHeights, 0, 0);
+
 	pContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	pContext->UpdateSubresource(m_pMaterialConstantBuffer, 0, nullptr, &m_material, 0, 0);
 	pContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
@@ -218,8 +253,9 @@ void Terrain::Draw(ID3D11DeviceContext* pContext)
 	pContext->PSSetShaderResources(3, 1, &m_pTextureResourceViewLightDirt);
 	pContext->PSSetShaderResources(4, 1, &m_pTextureResourceViewDarkDirt);
 	pContext->PSSetShaderResources(5, 1, &m_pTextureResourceViewSnow);
+	pContext->PSSetConstantBuffers(3, 1, &m_pTerrainTextureHeights);
 	pContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
-
+	
 	pContext->DrawIndexed(grid.indices.size(), 0, 0);
 
 }
@@ -298,11 +334,15 @@ int Terrain::Rnd(int min, int max)
 
 void Terrain::InitCorners()
 {
+	mHeightMap[ConvertTo1D(0, 0)] = Rnd();
+	mHeightMap[ConvertTo1D(size - 1, 0)] = Rnd();
+	mHeightMap[ConvertTo1D(0, size - 1)] = Rnd();
+	mHeightMap[ConvertTo1D(size - 1, size - 1)] = Rnd();
 
-	map[0][0] = Rnd();
+	/*map[0][0] = Rnd();
 	map[0][size - 1] = Rnd();
 	map[size - 1][0] = Rnd();
-	map[size - 1][size - 1] = Rnd();
+	map[size - 1][size - 1] = Rnd();*/
 }
 
 /**********************************************
@@ -321,14 +361,59 @@ void Terrain::DiamondSquare()
 	while (sideLength >= 2)
 	{
 		DiamondStep(sideLength + 1);
-		Clamp_map();
+		//Clamp_map();
 		SquareStep(sideLength + 1);
-		Clamp_map();
+		//Clamp_map();
 		sideLength /= 2;
 		roughness /= 2;
 	}
+}
 
-	DSLoadHeightMap();
+void Terrain::DiamondSquare1(int tileScale)
+{
+	terrainSize += 1;
+	DefineGrid(tileScale, tileScale, terrainSize, terrainSize);
+	InitCorners();
+
+	int sideLength = size - 1;
+
+	while (sideLength >= 2)
+	{
+		int halfSide = sideLength / 2;
+		for (int y = 0; y < size / (sideLength); y++)
+		{
+			for (int x = 0; x < size / (sideLength); x++)
+			{
+				int center_x = x * (sideLength) + halfSide;
+				int center_y = y * (sideLength) + halfSide;
+
+				int avg = (mHeightMap[ConvertTo1D(y * (sideLength), x * (sideLength))] +
+					mHeightMap[ConvertTo1D((y + 1) * (sideLength), x * (sideLength))] +
+					mHeightMap[ConvertTo1D(y * (sideLength), (x + 1) * (sideLength))] +
+					mHeightMap[ConvertTo1D((y + 1) * (sideLength), (x + 1) * (sideLength))]) / 4.0f;
+
+				mHeightMap[ConvertTo1D(center_y, center_x)] = avg + Rnd(-roughness, roughness);
+			}
+		}
+
+		for (int y = 0; y < size / (sideLength); y++)
+		{
+			for (int x = 0; x < size / (sideLength); x++)
+			{
+				// Top
+				Average(x * (sideLength) + halfSide, y * (sideLength), sideLength + 1);
+				// Right
+				Average((x + 1) * (sideLength), y * (sideLength) + halfSide, sideLength + 1);
+				// Bottom
+				Average(x * (sideLength) + halfSide, (y + 1) * (sideLength), sideLength + 1);
+				// Left
+				Average(x * (sideLength), y * (sideLength) + halfSide, sideLength + 1);
+			}
+		}
+
+		sideLength = (sideLength / 2);
+		roughness /= 2;
+	}
 }
 
 void Terrain::FaultLine()
@@ -351,12 +436,19 @@ void Terrain::DiamondStep(int sideLength)
 			int center_x = x * (sideLength - 1) + halfSide;
 			int center_y = y * (sideLength - 1) + halfSide;
 
-			int avg = (map[x * (sideLength - 1)][y * (sideLength - 1)] +
+			/*int avg = (map[x * (sideLength - 1)][y * (sideLength - 1)] +
 				map[x * (sideLength - 1)][(y + 1) * (sideLength - 1)] +
 				map[(x + 1) * (sideLength - 1)][y * (sideLength - 1)] +
-				map[(x + 1) * (sideLength - 1)][(y + 1) * (sideLength - 1)]) / 4.0f;
+				map[(x + 1) * (sideLength - 1)][(y + 1) * (sideLength - 1)]) / 4.0f;*/
 
-			map[center_x][center_y] = avg + Rnd(-roughness, roughness);
+			int avg = (mHeightMap[ConvertTo1D(y * (sideLength - 1), x * (sideLength - 1))] +
+				mHeightMap[ConvertTo1D((y + 1) * (sideLength - 1), x * (sideLength - 1))] +
+				mHeightMap[ConvertTo1D(y * (sideLength - 1), (x + 1) * (sideLength - 1))] +
+				mHeightMap[ConvertTo1D((y + 1) * (sideLength - 1), (x + 1) * (sideLength - 1))]) / 4.0f;
+
+			//map[center_x][center_y] = avg + Rnd(-roughness, roughness);
+
+			mHeightMap[ConvertTo1D(center_y, center_x)] = avg + Rnd(-roughness, roughness);
 		}
 	}
 
@@ -397,42 +489,100 @@ void Terrain::Average(int x, int y, int sideLength)
 	if (x != 0)
 	{
 		counter += 1.0f;
-		accumulator += map[y][x - halfSide];
+		//accumulator += map[y][x - halfSide];
+		//accumulator += mHeightMap[ConvertTo1D(x - halfSide, y)];
+		accumulator += mHeightMap[ConvertTo1D(x - halfSide, y)];
 	}
 	if (y != 0)
 	{
 		counter += 1.0f;
-		accumulator += map[y - halfSide][x];
+		//accumulator += map[y - halfSide][x];
+		//accumulator += mHeightMap[ConvertTo1D(x, y - halfSide)];
+		accumulator += mHeightMap[ConvertTo1D(x, y - halfSide)];
 	}
 	if (x != size - 1)
 	{
 		counter += 1.0f;
-		accumulator += map[y][x + halfSide];
+		//accumulator += map[y][x + halfSide];
+		//accumulator += mHeightMap[ConvertTo1D(x + halfSide, y)];
+		accumulator += mHeightMap[ConvertTo1D(x + halfSide, y)];
 	}
 	if (y != size - 1)
 	{
 		counter += 1.0f;
-		accumulator += map[y + halfSide][x];
+		//accumulator += map[y + halfSide][x];
+		//accumulator += mHeightMap[ConvertTo1D(x, y + halfSide)];
+		accumulator += mHeightMap[ConvertTo1D(x, y + halfSide)];
 	}
 
-	map[y][x] = (accumulator / counter) + Rnd(-roughness, roughness);
+	//map[y][x] = (accumulator / counter) + Rnd(-roughness, roughness);
+	mHeightMap[ConvertTo1D(x, y)] = (accumulator / counter) + Rnd(-roughness, roughness);
 
 }
 
-void Terrain::DSLoadHeightMap()
+int Terrain::ConvertTo1D(int x, int y)
 {
-	for (int y = 0; y < size; y++)
-	{
-		for (int x = 0; x < size; x++)
-		{
+	return (y * terrainSize) + x;
+}
 
-			float height = (float)map[y][x] / 255;
-			mHeightMap.push_back(height);
+void Terrain::SetHeights()
+{
+
+	for (int i = 0; i < (size * size); i++)
+		grid.vertices[i].Position.y = grid.vertices[i].Position.y + (mHeightMap[i] / 255.0f) * heightScale;
+}
+
+void Terrain::LoadFromJSON(char* _filePath)
+{
+	std::ifstream file(_filePath);
+	if (file.is_open())
+	{
+		json storedFile;
+		file >> storedFile;
+
+		SetTextureHeights();
+
+		m_position.x = storedFile["PositionX"];
+		m_position.y = storedFile["PositionY"];
+		m_position.z = storedFile["PositionZ"];
+
+		terrainSize = storedFile["Size"];
+		heightScale = storedFile["HeightScalingFactor"];
+
+		if (storedFile["Seed"].is_null())
+			srand(time(0));
+		else
+			srand(storedFile["Seed"]);
+
+		if (storedFile["Algorithm"] == "DiamondSquare")
+		{
+			terrainTextureHeights.textureHeight0 = storedFile["TerrainTextureHeight0"];
+			terrainTextureHeights.textureHeight1 = storedFile["TerrainTextureHeight1"];
+			terrainTextureHeights.textureHeight2 = storedFile["TerrainTextureHeight2"];
+			terrainTextureHeights.textureHeight3 = storedFile["TerrainTextureHeight3"];
+			terrainTextureHeights.textureHeight4 = storedFile["TerrainTextureHeight4"];
+
+			DiamondSquare1(storedFile["TileScalingFactor"]);
 		}
 	}
 }
 
+void Terrain::SetTextureHeights()
+{
+	terrainTextureHeights.textureHeight0 = 500;
+	terrainTextureHeights.textureHeight1 = 1000;
+	terrainTextureHeights.textureHeight2 = 1500;
+	terrainTextureHeights.textureHeight3 = 3000;
+	terrainTextureHeights.textureHeight4 = 3500;
+}
+
 void Terrain::Clamp(int* val, int min, int max)
+{
+	if (*val < min) *val = min;
+	if (*val > max) *val = max;
+}
+
+void Terrain::Clamp(float* val, int min, int max)
 {
 	if (*val < min) *val = min;
 	if (*val > max) *val = max;
@@ -444,7 +594,8 @@ void Terrain::Clamp_map()
 	{
 		for (int j = 0; j < size; j++)
 		{
-			Clamp(&map[i][j], 0, 255);
+			//Clamp(&map[i][j], 0, 255);
+			Clamp(&mHeightMap[ConvertTo1D(j, i)], 0, 255);
 		}
 	}
 }

@@ -605,7 +605,7 @@ HRESULT		Application::InitWorld(int width, int height)
 	g_Projection = XMLoadFloat4x4(&camera->camera._projection);
 
     g_GameObject = new DrawableGameObject(g_pd3dDevice, g_pImmediateContext);
-    grid = new Terrain(100.0f, 100.0f, 512, 512, 0.75, g_pd3dDevice, g_pImmediateContext);
+    grid = new Terrain(10.0f, 10.0f, 512, 512, 0.75, g_pd3dDevice, g_pImmediateContext);
     
     //skeleton = new Skeleton(g_pd3dDevice, g_pImmediateContext);
 
@@ -831,6 +831,8 @@ void Application::Update()
 
         g_View = XMLoadFloat4x4(&camera->camera._view);
     }
+
+    grid->Update(t);
 }
 
 //--------------------------------------------------------------------------------------

@@ -28,6 +28,7 @@
     <ClCompile Include="Bone.cpp" />
     <ClCompile Include="Framework\Skeleton\Skeleton.cpp" />
     <ClCompile Include="Framework\OBJLoader\OBJLoader.cpp" />
+    <ClCompile Include="Framework\Game Objects\GameObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h" />
@@ -65,6 +66,8 @@
     <ClInclude Include="Bone.h" />
     <ClInclude Include="Framework\Skeleton\Skeleton.h" />
     <ClInclude Include="Framework\OBJLoader\OBJLoader.h" />
+    <ClInclude Include="Framework\Dependencies\NlohmannJson\json.hpp" />
+    <ClInclude Include="Framework\Game Objects\GameObject.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Tutorial01.rc" />
