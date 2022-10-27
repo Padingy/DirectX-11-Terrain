@@ -605,7 +605,13 @@ HRESULT		Application::InitWorld(int width, int height)
 	g_Projection = XMLoadFloat4x4(&camera->camera._projection);
 
     g_GameObject = new DrawableGameObject(g_pd3dDevice, g_pImmediateContext);
-    grid = new Terrain(10.0f, 10.0f, 512, 512, 0.75, g_pd3dDevice, g_pImmediateContext);
+
+    //grid = new Terrain(10.0f, 10.0f, 512, 512, 0.75, g_pd3dDevice, g_pImmediateContext);
+    faultLineGrid = new Terrain((char*)"Framework/Terrain/JSON/FaultLine.json");
+    faultLineGrid->InitMesh(g_pd3dDevice, g_pImmediateContext);
+
+    diamondSquareGrid = new Terrain((char*)"Framework/Terrain/JSON/DiamondSquare.json");
+    diamondSquareGrid->InitMesh(g_pd3dDevice, g_pImmediateContext);
     
     //skeleton = new Skeleton(g_pd3dDevice, g_pImmediateContext);
 
@@ -785,7 +791,7 @@ void Application::Update()
     }
     if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
     {
-        grid->ResetSeed();
+        diamondSquareGrid->ResetSeed();
 
     }
 
@@ -832,7 +838,9 @@ void Application::Update()
         g_View = XMLoadFloat4x4(&camera->camera._view);
     }
 
-    grid->Update(t);
+    faultLineGrid->Update(t);
+    diamondSquareGrid->Update(t);
+
 }
 
 //--------------------------------------------------------------------------------------
@@ -854,17 +862,16 @@ void Application::Render()
 
     // get the game object world transform
 	//XMMATRIX mGO = XMLoadFloat4x4(g_GameObject.getTransform());
-	XMMATRIX mGO = XMLoadFloat4x4(g_GameObject->getTransform());
+	XMMATRIX mGO = XMLoadFloat4x4(diamondSquareGrid->GetTransform());
 
     // store this and the view / projection in a constant buffer for the vertex shader to use
     ConstantBuffer cb1;
 	cb1.mWorld = XMMatrixTranspose( mGO);
-	cb1.mView = XMMatrixTranspose( g_View );
-	cb1.mProjection = XMMatrixTranspose( g_Projection );
+	cb1.mView = XMMatrixTranspose( XMLoadFloat4x4(camera->GetView()));
+	cb1.mProjection = XMMatrixTranspose( XMLoadFloat4x4(camera->GetProjection()));
 	cb1.vOutputColor = XMFLOAT4(0, 0, 0, 0);
 	g_pImmediateContext->UpdateSubresource( g_pConstantBuffer, 0, nullptr, &cb1, 0, 0 );
 
-    
     SetupLightForRender();
 
     // Render the cube
@@ -872,7 +879,9 @@ void Application::Render()
     {
         g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
         g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pConstantBuffer);
-        grid->ToggleTessellation(false, g_pImmediateContext);
+
+        faultLineGrid->ToggleTessellation(false, g_pImmediateContext);
+        diamondSquareGrid->ToggleTessellation(false, g_pImmediateContext);
     }
     else if (tessellationToggled == true)
     {
@@ -883,7 +892,8 @@ void Application::Render()
         g_pImmediateContext->DSSetShader(g_pDomainShader, nullptr, 0);
         g_pImmediateContext->DSSetConstantBuffers(0, 1, &g_pConstantBuffer);
 
-        grid->ToggleTessellation(true, g_pImmediateContext);
+        faultLineGrid->ToggleTessellation(false, g_pImmediateContext);
+        diamondSquareGrid->ToggleTessellation(true, g_pImmediateContext);
     }
 
 	/*g_pImmediateContext->VSSetShader( g_pVertexShader, nullptr, 0 );
@@ -897,19 +907,26 @@ void Application::Render()
 	g_pImmediateContext->PSSetConstantBuffers(2, 1, &g_pLightConstantBuffer);
 
     //ID3D11Buffer* materialCB = g_GameObject->getMaterialConstantBuffer();
-    ID3D11Buffer* materialCB = grid->getMaterialConstantBuffer();
+    ID3D11Buffer* materialCB = diamondSquareGrid->getMaterialConstantBuffer();
     g_pImmediateContext->PSSetConstantBuffers(1, 1, &materialCB);
 
     g_pImmediateContext->RSSetState(rsState);
 
+    cb1.mWorld = XMMatrixTranspose(XMLoadFloat4x4(faultLineGrid->GetTransform()));
+    g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb1, 0, 0);
+    faultLineGrid->Draw(g_pImmediateContext, camera->GetView(), camera->GetProjection());
+
+    cb1.mWorld = XMMatrixTranspose(XMLoadFloat4x4(diamondSquareGrid->GetTransform()));
+    g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb1, 0, 0);
+    diamondSquareGrid->Draw(g_pImmediateContext, camera->GetView(), camera->GetProjection());
     
    // g_GameObject->draw(g_pImmediateContext);
 
-    mGO = XMLoadFloat4x4(grid->GetTransform());
+   /* mGO = XMLoadFloat4x4(diamondSquareGrid->GetTransform());
     cb1.mWorld = XMMatrixTranspose(mGO);
-    g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb1, 0, 0);
+    g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb1, 0, 0);*/
 
-    grid->Draw(g_pImmediateContext);
+    
     //skeleton->Draw(g_pImmediateContext, cb1, g_pConstantBuffer);
 
     ImGui_ImplDX11_NewFrame();
@@ -919,6 +936,9 @@ void Application::Render()
     ImGui::Text("Current View: (%.5f)(%.5f)(%.5f)", camera->GetPos().x, camera->GetPos().y, camera->GetPos().z);
     ImGui::Text("camera at: (%.5f)(%.5f)(%.5f)", camera->GetAt().x, camera->GetAt().y, camera->GetAt().z);
     ImGui::Text("camera up: (%.5f)(%.5f)(%.5f)", camera->GetUp().x, camera->GetUp().y, camera->GetUp().z);
+
+    ImGui::Text("Fault Line Grid Position: (%.5f)(%.5f)(%.5f)", faultLineGrid->GetPosition().x, faultLineGrid->GetPosition().y, faultLineGrid->GetPosition().z);
+    ImGui::Text("Diamond Square Grid Position: (%.5f)(%.5f)(%.5f)", diamondSquareGrid->GetPosition().x, diamondSquareGrid->GetPosition().y, diamondSquareGrid->GetPosition().z);
 
     ImGui::Text("Movement Control Type: %s", currentView.c_str());
     ImGui::Checkbox("Tessellation", &tessellationToggled);

@@ -1,0 +1,18 @@
+{
+    "PositionX": 0,
+    "PositionY": 0,
+    "PositionZ": 0,
+    "Size": 512,
+    "TileScalingFactor": 10.0,
+    "HeightScalingFactor": 5.0,
+    "SmoothingFactor": 0.75,
+    "Seed": 10,
+    "Iterations": 400,
+    "Displacement": 5.0,
+    "TerrainTextureHeight0": 100,
+    "TerrainTextureHeight1": 250,
+    "TerrainTextureHeight2": 1000,
+    "TerrainTextureHeight3": 1500,
+    "TerrainTextureHeight4": 3500,
+    "Algorithm": "FaultLine"
+}

@@ -95,7 +95,8 @@ private:
 
 	DrawableGameObject* g_GameObject;
 
-	Terrain* grid = nullptr;
+	Terrain* faultLineGrid = nullptr;
+	Terrain* diamondSquareGrid = nullptr;
 
 	Skeleton* skeleton;
 };

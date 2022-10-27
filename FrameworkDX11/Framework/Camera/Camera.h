@@ -17,8 +17,8 @@ public:
 	void SetViewMatrix();
 	void SetProjMatrix();
 
-	XMFLOAT4X4 GetView();
-	XMFLOAT4X4 GetProjection();
+	XMFLOAT4X4* GetView();
+	XMFLOAT4X4* GetProjection();
 
 	XMFLOAT4 GetPos();
 	XMFLOAT4 GetAt();

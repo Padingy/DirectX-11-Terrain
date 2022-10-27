@@ -40,14 +40,14 @@ void Camera::SetProjMatrix()
 	XMStoreFloat4x4(&camera._projection, XMMatrixPerspectiveFovLH(XM_PIDIV2, camera._windowWidth / (FLOAT)camera._windowHeight, camera._nearDepth, camera._farDepth));
 }
 
-XMFLOAT4X4 Camera::GetView()
+XMFLOAT4X4* Camera::GetView()
 {
-	return camera._view;
+	return &camera._view;
 }
 
-XMFLOAT4X4 Camera::GetProjection()
+XMFLOAT4X4* Camera::GetProjection()
 {
-	return camera._projection;
+	return &camera._projection;
 }
 
 

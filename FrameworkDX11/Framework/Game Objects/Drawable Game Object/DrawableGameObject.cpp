@@ -192,7 +192,7 @@ void DrawableGameObject::update(float t, ID3D11DeviceContext* pContext)
 	// Cube:  Rotate around origin
 	//XMMATRIX mSpin = XMMatrixRotationY(cummulativeTime);
 
-	XMMATRIX mTranslate = XMMatrixTranslation(0.0f, -1.0f, -3.0f);
+	XMMATRIX mTranslate = XMMatrixTranslation(0.0f, -1000.0f, -30000.0f);
 	XMMATRIX world = mTranslate;
 	XMStoreFloat4x4(&m_World, world);
 

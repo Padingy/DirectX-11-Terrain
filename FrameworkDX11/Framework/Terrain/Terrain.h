@@ -23,13 +23,13 @@ using json = nlohmann::json;
 class Terrain : public GameObject
 {
 public:
-	struct Vertex
-	{
-		XMFLOAT3 Position;
-		XMFLOAT3 Normal;
-		//XMFLOAT3 Tangent;
-		XMFLOAT2 TexCoord;
-	};
+	//struct Vertex
+	//{
+	//	XMFLOAT3 Position;
+	//	XMFLOAT3 Normal;
+	//	//XMFLOAT3 Tangent;
+	//	XMFLOAT2 TexCoord;
+	//};
 
 	struct TerrainData
 	{
@@ -48,13 +48,16 @@ public:
 	};
 
 	Terrain(float width, float height, UINT rows, UINT cols, float smoothingFactor, ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContext, int seed = time(0));
+	Terrain(char* _filepath);
 	~Terrain();
+
+	virtual void Release() override;
 
 	void Init();
 	void DefineGrid(float width, float depth, UINT rows, UINT cols);
 	HRESULT InitMesh(ID3D11Device* pd3dDevice, ID3D11DeviceContext* pContext);
 	virtual void Update(float t) override;
-	virtual void Draw(ID3D11DeviceContext* pContext) override;
+	virtual void Draw(ID3D11DeviceContext* pContext, XMFLOAT4X4* viewMatrix, XMFLOAT4X4* projMatrix) override;
 
 	void ToggleTessellation(bool toggled, ID3D11DeviceContext* pContext);
 
@@ -62,8 +65,8 @@ public:
 
 	void TerrainSmoothing(float k, UINT rows, UINT cols);
 
-	void SetPosition(XMFLOAT4 newPosition) { m_position = newPosition; };
-	XMFLOAT4 GetPosition() { return m_position; };
+	/*void SetPosition(XMFLOAT3 newPosition) { m_position = newPosition; };
+	XMFLOAT3 GetPosition() { return m_position; };*/
 
 	void SetHeights();
 	void SetTextureHeights();
@@ -80,7 +83,7 @@ public:
 	void DiamondSquare();
 	void DiamondSquare1(int tileScale);
 	vector<float> GetHeightMap() { return mHeightMap; };
-	void FaultLine();
+	void FaultLine(int iterations, int displacement, int tileScale);
 	int ConvertTo1D(int x, int y);
 	void LoadFromJSON(char* _filePath);
 
@@ -93,6 +96,7 @@ public:
 private:
 	XMFLOAT4X4 m_World;
 
+	ID3D11Buffer* m_pConstantBuffer = nullptr;
 	ID3D11Buffer* m_pVertexBuffer;
 	ID3D11Buffer* m_pIndexBuffer;
 	ID3D11ShaderResourceView* m_pTextureResourceViewWater;
@@ -105,7 +109,7 @@ private:
 	MaterialPropertiesConstantBuffer	m_material;
 	ID3D11Buffer* m_pMaterialConstantBuffer = nullptr;
 	ID3D11Buffer* m_pTerrainTextureHeights = nullptr;
-	XMFLOAT4 m_position;
+	/*XMFLOAT3 m_position;*/
 
 	UINT stride;
 	UINT offset;
@@ -127,7 +131,7 @@ private:
 	vector<float> mHeightMap;
 	int heightmapHeight = 513;
 	int heightmapWidth = 513;
-	float heightScale = 1.0f;
+	float heightScale = 2.0f;
 
 	int terrainSize = 512;
 	int map[513][513];
